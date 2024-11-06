@@ -59,25 +59,38 @@ def most_expensive_baked_good():
     most_expensive_serialized = most_expensive.to_dict()
     return make_response( most_expensive_serialized,   200  )
 
-@app.route('/baked_goods', methods=['POST'])
+@app.route('/baked_goods', methods=['GET','POST'])
 def post_baked_good():
-    new_baked_good = BakedGood(
+    if request.method == 'GET':
+        reviews = []
+        for review in Review.query.all():
+            review_dict = review.to_dict()
+            reviews.append(review_dict)
+
+        response = make_response(
+            reviews,
+            200
+        )
+
+        return response
+    elif request.method == 'POST':
+        new_baked_good = BakedGood(
             name=request.form.get("name"),
             price=request.form.get("price"),
             bakery_id=request.form.get("bakery_id"),
         )
 
-    db.session.add(new_baked_good)
-    db.session.commit()
+        db.session.add(new_baked_good)
+        db.session.commit()
 
-    review_dict = new_baked_good.to_dict()
+        review_dict = new_baked_good.to_dict()
 
-    response = make_response(
+        response = make_response(
             review_dict,
             201
         )
 
-    return response
+        return response
 
 @app.route('/baked_goods/<int:id>', methods=["DELETE"])
 def delete_baked_good(id):
